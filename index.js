@@ -1,24 +1,24 @@
-const express=require ("express");
 require('dotenv').config();
-const {dbConnection}=require('./database/config');
-const cors=require('cors');
+const express = require("express");
+const cors = require('cors');
 
-const app=express();
+const { dbConnection } = require('./database/config');
 
+const app = express();
 
+//midlewares
+
+app.use(cors());
+
+app.use(express.json());
 //base de datos
-app.use(cors);
+
 dbConnection();
 
+app.use('/api/usuarios',require('./routes/usuarios'));
+app.use('/api/login',require('./routes/auth'));
 
-app.get('/',(req,res)=>{
-    res.status(200).json({
-        ok:true,
-        msg:"hola mundo"
-    })
+
+app.listen(process.env.PORT, () => {
+    console.log("Funcionando en el puerto " + process.env.PORT)
 });
-
-
-app.listen(process.env.PORT,(()=>{
-    console.log("Funcionando en el puerto "+ process.env.PORT)
-}))
