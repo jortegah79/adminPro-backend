@@ -1,15 +1,22 @@
 const { response } = require('express');
-const Usuario=require('../models/usuario');
+const Usuario = require('../models/usuario');
 const bcrypt = require('bcryptjs');
 const { generarJWT } = require('../helpers/jwt');
 
-const getUsuarios = async (req, res=response) => {
+const getUsuarios = async (req, res = response) => {
 
-    const usuarios = await Usuario.find({}, 'nombre email role google');
+    const desde = Number(req.query.desde) || 0;
+
+    const [usuarios, cantidad] =await Promise.all(
+        [Usuario.find({}, 'nombre email role google img')
+            .skip(desde)
+            .limit(5),
+        Usuario.countDocuments()]);
 
     res.status(200).json({
         ok: true,
-        usuarios: usuarios
+        cantidad,
+        usuarios
     })
 }
 const crearUsuario = async (req, res) => {
@@ -32,11 +39,11 @@ const crearUsuario = async (req, res) => {
 
         usuario.password = bcrypt.hashSync(password, salt);
 
-        const user=await usuario.save();
+        const user = await usuario.save();
 
-       
 
-        const token=await generarJWT(user._id)
+
+        const token = await generarJWT(user._id)
 
         res.json({
             ok: true,
@@ -98,7 +105,7 @@ const actualizarUsuario = async (req, res) => {
     }
 
 }
-const borrarUsuario = async (req, res=response) => {
+const borrarUsuario = async (req, res = response) => {
 
     const uid = req.params.id;
 
@@ -113,11 +120,11 @@ const borrarUsuario = async (req, res=response) => {
             })
         }
 
-        await Usuario.findByIdAndDelete( uid)
+        await Usuario.findByIdAndDelete(uid)
 
         res.status(200).json({
             ok: true,
-            msg:'Usuario eliminado'
+            msg: 'Usuario eliminado'
         })
     } catch (error) {
         console.log(error)
