@@ -6,12 +6,12 @@ const { generarJWT } = require('../helpers/jwt');
 const getHospitales = async (req, res = response) => {
 
     const hospitales = await Hospital.find()
-    .populate('usuario','nombre');
+        .populate('usuario', 'nombre');
 
     res.status(200).json({
         ok: true,
         hospitales
-        
+
     })
 }
 const crearHospital = async (req, res) => {
@@ -23,30 +23,12 @@ const crearHospital = async (req, res) => {
     });
 
     try {
-        //     const existeEmail = await Usuario.findOne({ email });
-
-        //     if (existeEmail) {
-        //         return res.status(400).json({
-        //             ok: false,
-        //             msg: "EL correo ya está registrado"
-        //         });
-        //     }
-        //     const usuario = new Usuario(req.body);
-
-        //     //encriptar contraseña
-        //     const salt = bcrypt.genSaltSync();
-
-        //     usuario.password = bcrypt.hashSync(password, salt);
 
         const hospitalDB = await hospital.save();
 
-
-
-        //     const token = await generarJWT(user._id)
-
         res.json({
             ok: true,
-            hospitalDB          
+            hospitalDB
         })
 
     } catch (error) {
@@ -59,80 +41,69 @@ const crearHospital = async (req, res) => {
 }
 const actualizarHospital = async (req, res) => {
 
-    // const uuid = req.params.id;
+    const id = req.params.id;
 
-    // try {
-    //     const usuarioDB = await Usuario.findById(uuid);
+    const uid = req.uid;
 
-    //     if (!usuarioDB) {
-    //         res.status(404).json({
-    //             ok: false,
-    //             msg: "No existe un usuario con ese id"
-    //         })
-    //     }
-    //     const { password, google, email, ...campos } = req.body;
+    try {
 
-    //     if (usuarioDB.email !== email) {
+        const hospital = await Hospital.findById(id);
 
-    //         const existeEMail = await Usuario.findOne({ email })
-    //         if (existeEMail) {
-    //             return res.status(400).json({
-    //                 ok: false,
-    //                 msg: 'Ya existe un usuario con ese email'
-    //             })
-    //         }
-    //     }
+        if (!hospital) {
+            return res.status(404).json({
+                ok: false,
+                msg: 'hospital no encontrado por id.'
+            })
+        }
+        hospital.nombre = req.body.nombre;
 
-    //     //Actualizaciones
+        const cambiosHospital = {
+            ...req.body,
+            uid
+        }
+        const hospitalActualizado = await Hospital.findByIdAndUpdate(id, cambiosHospital, { new: true });
+        res.json({
+            ok: true,
+            msg: 'Actualiza hospital',
+            hospital: hospitalActualizado
 
-    //     // delete campos.password;
-    //     // delete campos.google;
-    //     campos.email = email;
-    //     const usuarioActualizado = await Usuario.findByIdAndUpdate(uuid, campos, { new: true });
-
-    res.json({
-        ok: true,
-        //usuarioActualizado
-        msg: 'Actualiza hospital'
-
-    })
-    // } catch (error) {
-    //     console.log(error);
-    //     res.status(500).json({
-    //         ok: false,
-    //         msg: 'Error inesperado'
-    //     })
-    // }
+        })
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            msg: 'Hable con el administrador'
+        })
+    }
 
 }
 const borrarHospital = async (req, res = response) => {
 
-    // const uid = req.params.id;
+     const id = req.params.id;
 
-    // try {
+    try {
 
-    //     const usuarioDB = await Usuario.findById(uid);
+        const hospital = await Hospital.findById( id );
 
-    //     if (!usuarioDB) {
-    //         res.status(404).json({
-    //             ok: false,
-    //             msg: "No existe un usuario con ese id"
-    //         })
-    //     }
+        if ( !hospital ) {
+            res.status(404).json({
+                ok: false,
+                msg: "Hospital no encontrado con ese id"
+            })
+        }
 
-    //     await Usuario.findByIdAndDelete(uid)
+        await Hospital.findByIdAndDelete( id )
 
     res.status(200).json({
         ok: true,
         msg: 'Hospital eliminado'
     })
-    // } catch (error) {
-    //     console.log(error)
-    //     res.status(500).json({
-    //         ok: false,
-    //         msg: 'Error inesperado'
-    //     })
-    // }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Comunique con el administrador'
+        })
+    }
 }
 module.exports = {
     getHospitales,

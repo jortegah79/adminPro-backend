@@ -5,14 +5,14 @@ const { generarJWT } = require('../helpers/jwt');
 
 const getMedicos = async (req, res = response) => {
 
-     const medicos = await Medico.find({})
-     .populate('hospital','nombre img')
-     .populate('usuario',"nombre img");
+    const medicos = await Medico.find({})
+        .populate('hospital', 'nombre img')
+        .populate('usuario', "nombre img");
 
     res.status(200).json({
         ok: true,
         medicos
-        
+
     })
 }
 const crearMedico = async (req, res) => {
@@ -39,80 +39,72 @@ const crearMedico = async (req, res) => {
 }
 const actualizarMedico = async (req, res) => {
 
-    // const uuid = req.params.id;
+    const id = req.params.id;
 
-    // try {
-    //     const usuarioDB = await Usuario.findById(uuid);
+    const uid = req.uid;
 
-    //     if (!usuarioDB) {
-    //         res.status(404).json({
-    //             ok: false,
-    //             msg: "No existe un usuario con ese id"
-    //         })
-    //     }
-    //     const { password, google, email, ...campos } = req.body;
+    try {
+        const medico = await Medico.findById(id);
 
-    //     if (usuarioDB.email !== email) {
+        if (!medico) {
+            res.status(404).json({
+                ok: false,
+                msg: "No existe un medico con ese id"
+            })
+        }
+        medico.nombre = req.body.nombre;
 
-    //         const existeEMail = await Usuario.findOne({ email })
-    //         if (existeEMail) {
-    //             return res.status(400).json({
-    //                 ok: false,
-    //                 msg: 'Ya existe un usuario con ese email'
-    //             })
-    //         }
-    //     }
+        const cambioMedico = {
+            ...req.body,
+            uid
+        }
 
-    //     //Actualizaciones
+        const medicoActualizado = await Medico.findByIdAndUpdate(id, cambioMedico, { new: true });
 
-    //     // delete campos.password;
-    //     // delete campos.google;
-    //     campos.email = email;
-    //     const usuarioActualizado = await Usuario.findByIdAndUpdate(uuid, campos, { new: true });
+        res.json({
+            ok: true,
+            msg: 'Actualiza medico',
+            medicoActualizado
 
-    res.json({
-        ok: true,
-        //usuarioActualizado
-        msg: 'Actualiza medico'
-
-    })
-    // } catch (error) {
-    //     console.log(error);
-    //     res.status(500).json({
-    //         ok: false,
-    //         msg: 'Error inesperado'
-    //     })
-    // }
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
+    }
 
 }
 const borrarMedico = async (req, res = response) => {
 
-    // const uid = req.params.id;
+    const id = req.params.id;
 
-    // try {
+    
+    try {
 
-    //     const usuarioDB = await Usuario.findById(uid);
+        const medico = await Medico.findById( id );
 
-    //     if (!usuarioDB) {
-    //         res.status(404).json({
-    //             ok: false,
-    //             msg: "No existe un usuario con ese id"
-    //         })
-    //     }
+        if ( !medico ) {
+             res.status(404).json({
+                ok: false,
+                msg: "Medico no encontrado con ese id"
+            })
+        }
 
-    //     await Usuario.findByIdAndDelete(uid)
+        await Medico.findByIdAndDelete( id )
 
     res.status(200).json({
         ok: true,
         msg: 'medico eliminado'
     })
-    // } catch (error) {
-    //     console.log(error)
-    //     res.status(500).json({
-    //         ok: false,
-    //         msg: 'Error inesperado'
-    //     })
-    // }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Comunique con el administrador'
+        })
+    }
 }
 module.exports = {
     getMedicos,
